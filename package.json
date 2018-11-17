@@ -1,8 +1,8 @@
 {
     "name": "codewall",
     "displayName": "CodeWall",
-    "description": "Highlights ruler red if code crosses it",
-    "version": "0.0.1",
+    "description": "VS Code extension that checks if code goes past your rulers",
+    "version": "1.0.1",
     "publisher": "abhinavk99",
     "engines": {
         "vscode": "^1.29.0"
@@ -10,6 +10,10 @@
     "categories": [
         "Other"
     ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/abhinavk99/codewall.git"
+    },
     "activationEvents": [
         "*"
     ],
