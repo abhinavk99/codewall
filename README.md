@@ -1,11 +1,11 @@
 # codewall
 
-VS Code extension that checks if code goes past your rulers.
+VS Code extension that checks if code goes past your rulers. Install it [here](https://marketplace.visualstudio.com/items?itemName=abhinavk99.codewall)!
 
 ## Features
 
 Shows warnings at the specific locations where code goes past your rulers.
 
-![](images/window.png)
+![](https://raw.githubusercontent.com/abhinavk99/codewall/master/images/window.PNG)
 
-![](images/message.png)
+![](https://raw.githubusercontent.com/abhinavk99/codewall/master/images/message.PNG)
