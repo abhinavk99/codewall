@@ -1,29 +1,70 @@
 'use strict';
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+import { ExtensionContext, TextDocument, workspace, commands, window, TextEditor, languages, DiagnosticCollection, Diagnostic, Range, Position, DiagnosticSeverity } from 'vscode';
 
-    // Use the console to output diagnostic information (console.log) and errors (console.error)
-    // This line of code will only be executed once when your extension is activated
-    console.log('Congratulations, your extension "codewall" is now active!');
+export function activate(context: ExtensionContext) {
 
-    // The command has been defined in the package.json file
-    // Now provide the implementation of the command with  registerCommand
-    // The commandId parameter must match the command field in package.json
-    let disposable = vscode.commands.registerCommand('extension.sayHello', () => {
-        // The code you place here will be executed every time your command is executed
+    console.log('Congratulations, your extension "CodeWall" is now active!');
 
-        // Display a message box to the user
-        vscode.window.showInformationMessage('Hello World!');
-    });
+    const diagnostics = languages.createDiagnosticCollection('CodeWall');
+    const codeWall = new CodeWall();
 
-    context.subscriptions.push(disposable);
+    if (window.activeTextEditor) {
+        codeWall.checkCrossingWall(window.activeTextEditor.document, diagnostics);
+    }
+
+    context.subscriptions.push(window.onDidChangeActiveTextEditor((editor: TextEditor) => {
+        codeWall.checkCrossingWall(editor.document, diagnostics);
+    }));
+
+    context.subscriptions.push(workspace.onDidSaveTextDocument((document: TextDocument) => {
+        codeWall.checkCrossingWall(document, diagnostics);
+    }));
+
+    context.subscriptions.push(codeWall);
 }
 
-// this method is called when your extension is deactivated
 export function deactivate() {
+}
+
+class CodeWall {
+
+    public checkCrossingWall(document: TextDocument, diagnosticCollection: DiagnosticCollection) {
+
+        diagnosticCollection.clear();
+        let diagnostics: Diagnostic[] = [];
+
+        // Get rulers in descending order
+        const rulers: Array<number> = workspace.getConfiguration('editor', null).get('rulers');
+        rulers.sort((a, b) => b - a);
+        console.log(rulers);
+
+        // Go through all the lines in the document
+        const lineCount = document.lineCount;
+        for (let lineNumber = 0; lineNumber < lineCount; lineNumber++) {
+            let line = document.lineAt(lineNumber);
+            let character = line.range.end.character;
+            for (let ruler of rulers) {
+                // Check if the line passes the ruler
+                if (character >= ruler) {
+                    let message = `Line ${lineNumber + 1} is longer than ruler at ${ruler}.`;
+                    console.log(message)
+                    diagnostics.push({
+                        code: '',
+                        message: message,
+                        range: new Range(new Position(lineNumber, ruler - 1), line.range.end),
+                        severity: DiagnosticSeverity.Warning
+                    });
+                    break;
+                }
+            }
+        }
+
+        diagnosticCollection.set(document.uri, diagnostics);
+
+        // Open problems panel
+        commands.executeCommand('workbench.action.problems.focus');
+    }
+
+    public dispose() { }
 }
