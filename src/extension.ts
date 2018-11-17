@@ -46,7 +46,7 @@ class CodeWall {
             let character = line.range.end.character;
             for (let ruler of rulers) {
                 // Check if the line passes the ruler
-                if (character >= ruler) {
+                if (character > ruler) {
                     let message = `Line ${lineNumber + 1} is longer than ruler at ${ruler}.`;
                     console.log(message)
                     diagnostics.push({
