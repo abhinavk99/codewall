@@ -60,10 +60,12 @@ class CodeWall {
             }
         }
 
-        diagnosticCollection.set(document.uri, diagnostics);
+        if (diagnostics.length > 0) {
+            diagnosticCollection.set(document.uri, diagnostics);
 
-        // Open problems panel
-        commands.executeCommand('workbench.action.problems.focus');
+            // Open problems panel
+            commands.executeCommand('workbench.action.problems.focus');
+        }
     }
 
     public dispose() { }
