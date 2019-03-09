@@ -2,7 +2,7 @@
     "name": "codewall",
     "displayName": "CodeWall",
     "description": "VS Code extension that checks if code goes past your rulers",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "publisher": "abhinavk99",
     "engines": {
         "vscode": "^1.29.0"
