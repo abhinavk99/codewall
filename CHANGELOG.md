@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.0.7] - 2019-07-22
+- Updated dev dependencies
+
 ## [1.0.6] - 2019-07-22
 - Fixed repository link in package.json
 
