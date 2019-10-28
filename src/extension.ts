@@ -32,7 +32,7 @@ class CodeWall {
     public checkCrossingWall(document: TextDocument, diagnosticCollection: DiagnosticCollection) {
 
         diagnosticCollection.clear();
-        let diagnostics: Diagnostic[] = [];
+        const diagnostics: Diagnostic[] = [];
 
         // Get rulers in descending order
         const rulers: Array<number> = workspace.getConfiguration('editor', null).get('rulers');
@@ -42,12 +42,12 @@ class CodeWall {
         // Go through all the lines in the document
         const lineCount = document.lineCount;
         for (let lineNumber = 0; lineNumber < lineCount; lineNumber++) {
-            let line = document.lineAt(lineNumber);
-            let character = line.range.end.character;
+            const line = document.lineAt(lineNumber);
+            const character = line.range.end.character;
             for (let ruler of rulers) {
                 // Check if the line passes the ruler
                 if (character > ruler) {
-                    let message = `Line ${lineNumber + 1} is longer than ruler at ${ruler}.`;
+                    const message = `Line ${lineNumber + 1} is longer than ruler at ${ruler}.`;
                     console.log(message);
                     diagnostics.push({
                         code: '',
@@ -63,8 +63,10 @@ class CodeWall {
         if (diagnostics.length > 0) {
             diagnosticCollection.set(document.uri, diagnostics);
 
-            // Open problems panel
-            commands.executeCommand('workbench.action.problems.focus');
+            // Open problems pane if setting is on
+            if (workspace.getConfiguration('codewall').get('openProblemsPane')) {
+                commands.executeCommand('workbench.action.problems.focus');
+            }
         }
     }
 

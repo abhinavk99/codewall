@@ -18,6 +18,18 @@
         "*"
     ],
     "main": "./out/extension",
+    "contributes": {
+        "configuration": {
+            "title": "CodeWall",
+            "properties": {
+                "codewall.openProblemsPane": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Open problems pane to show warnings for lines that cross a ruler"
+                }
+            }
+        }
+    },
     "scripts": {
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
