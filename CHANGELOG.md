@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.1.0] - 2019-10-28
+- Added setting `codewall.openProblemsPane` for whether to open it to show warnings
+
 ## [1.0.7] - 2019-07-22
 - Updated dev dependencies
 
