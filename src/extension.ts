@@ -35,7 +35,7 @@ class CodeWall {
         const diagnostics: Diagnostic[] = [];
 
         // Get rulers in descending order
-        const rulers: Array<number> = workspace.getConfiguration('editor', null).get('rulers');
+        const rulers: Array<number> = workspace.getConfiguration('editor').get('rulers');
         rulers.sort((a, b) => b - a);
         console.log(rulers);
 
@@ -44,7 +44,7 @@ class CodeWall {
         for (let lineNumber = 0; lineNumber < lineCount; lineNumber++) {
             const line = document.lineAt(lineNumber);
             const character = line.range.end.character;
-            for (let ruler of rulers) {
+            for (const ruler of rulers) {
                 // Check if the line passes the ruler
                 if (character > ruler) {
                     const message = `Line ${lineNumber + 1} is longer than ruler at ${ruler}.`;
