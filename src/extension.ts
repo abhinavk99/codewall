@@ -4,8 +4,6 @@ import { ExtensionContext, TextDocument, workspace, commands, window, TextEditor
 
 export function activate(context: ExtensionContext) {
 
-    console.log('Congratulations, your extension "CodeWall" is now active!');
-
     const diagnostics = languages.createDiagnosticCollection('CodeWall');
     const codeWall = new CodeWall();
 
@@ -37,7 +35,6 @@ class CodeWall {
         // Get rulers in descending order
         const rulers: Array<number> = workspace.getConfiguration('editor').get('rulers');
         rulers.sort((a, b) => b - a);
-        console.log(rulers);
 
         // Go through all the lines in the document
         const lineCount = document.lineCount;
