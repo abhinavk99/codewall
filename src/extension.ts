@@ -1,21 +1,21 @@
 'use strict';
 
-import { ExtensionContext, TextDocument, workspace, commands, window, TextEditor, languages, DiagnosticCollection, Diagnostic, Range, Position, DiagnosticSeverity } from 'vscode';
+import * as vscode from 'vscode';
 
-export function activate(context: ExtensionContext) {
+export function activate(context: vscode.ExtensionContext) {
 
-    const diagnostics = languages.createDiagnosticCollection('CodeWall');
+    const diagnostics = vscode.languages.createDiagnosticCollection('CodeWall');
     const codeWall = new CodeWall();
 
-    if (window.activeTextEditor) {
-        codeWall.checkCrossingWall(window.activeTextEditor.document, diagnostics);
+    if (vscode.window.activeTextEditor) {
+        codeWall.checkCrossingWall(vscode.window.activeTextEditor.document, diagnostics);
     }
 
-    context.subscriptions.push(window.onDidChangeActiveTextEditor((editor: TextEditor) => {
+    context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor((editor: vscode.TextEditor) => {
         codeWall.checkCrossingWall(editor.document, diagnostics);
     }));
 
-    context.subscriptions.push(workspace.onDidSaveTextDocument((document: TextDocument) => {
+    context.subscriptions.push(vscode.workspace.onDidSaveTextDocument((document: vscode.TextDocument) => {
         codeWall.checkCrossingWall(document, diagnostics);
     }));
 
@@ -27,13 +27,13 @@ export function deactivate() {
 
 class CodeWall {
 
-    public checkCrossingWall(document: TextDocument, diagnosticCollection: DiagnosticCollection) {
+    public checkCrossingWall(document: vscode.TextDocument, diagnosticCollection: vscode.DiagnosticCollection) {
 
         diagnosticCollection.clear();
-        const diagnostics: Diagnostic[] = [];
+        const diagnostics: vscode.Diagnostic[] = [];
 
         // Get rulers in descending order
-        const rulers: Array<number> = workspace.getConfiguration('editor').get('rulers');
+        const rulers: Array<number> = vscode.workspace.getConfiguration('editor').get('rulers');
         rulers.sort((a, b) => b - a);
 
         // Go through all the lines in the document
@@ -49,8 +49,8 @@ class CodeWall {
                     diagnostics.push({
                         code: '',
                         message: message,
-                        range: new Range(new Position(lineNumber, ruler - 1), line.range.end),
-                        severity: DiagnosticSeverity.Warning
+                        range: new vscode.Range(new vscode.Position(lineNumber, ruler - 1), line.range.end),
+                        severity: vscode.DiagnosticSeverity.Warning
                     });
                     break;
                 }
@@ -61,8 +61,8 @@ class CodeWall {
             diagnosticCollection.set(document.uri, diagnostics);
 
             // Open problems pane if setting is on
-            if (workspace.getConfiguration('codewall').get('openProblemsPane')) {
-                commands.executeCommand('workbench.action.problems.focus');
+            if (vscode.workspace.getConfiguration('codewall').get('openProblemsPane')) {
+                vscode.commands.executeCommand('workbench.action.problems.focus');
             }
         }
     }
