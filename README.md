@@ -23,7 +23,7 @@ Valid Values:
 
 ```json
 "editor.rulers": [
-  {"column": 90, "color": "#000"}
+  {"column": 90, "color": "#000"},
   {"column": 105, "color": "#ff0000"}
 ]
 ```
