@@ -17,13 +17,14 @@ This extension has the following settings:
 - `codewall.openProblemsPane`: Determines whether to open the problems pane to show warnings when lines cross rulers. Is true by default.
 
 ## Usage
+
 Add a rulers using the `editor.rulers` setting (`Command Palette -> Preferences: Open Settings (JSON)`).
 
 Valid Values:
 
 ```json
 "editor.rulers": [
-  {"column": 90, "color": "#000"},
+  {"column": 90, "color": "#000000"},
   {"column": 105, "color": "#ff0000"}
 ]
 ```
