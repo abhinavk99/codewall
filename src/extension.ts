@@ -82,12 +82,13 @@ export class CodeWall {
   }
 
   /**
-   * Gets all the rulers in the VS Code settings in ascending column number order.
+   * Gets all the rulers in the VS Code settings in ascending column number order ignoring rulers at column <= 0.
    * @returns Rulers sorted by ascending column number order
    */
   private getRulersAscendingOrder() {
     const rulers: Array<Ruler> = vscode.workspace.getConfiguration('editor').get('rulers', []);
     rulers.sort(this.rulerComparator.bind(this));
+    rulers.filter((ruler) => this.getRulerColumnNumber(ruler) > 0);
     return rulers;
   }
 
