@@ -1,6 +1,7 @@
 'use strict';
 
-import * as vscode from 'vscode';
+import vscode from 'vscode';
+import binarySearch from 'binary-search';
 
 // A ruler in VS Code settings can either be a number or an object mapping strings to numbers/strings
 // e.g. 90
@@ -51,27 +52,22 @@ export class CodeWall {
     diagnosticCollection.clear();
     const diagnostics: vscode.Diagnostic[] = [];
 
-    const rulers = this.getRulersDescendingOrder();
+    const rulers = this.getRulersAscendingOrder();
     if (rulers.length == 0) {
       return;
     }
 
     for (const line of this.getLines(document)) {
-      for (const ruler of rulers) {
-        if (this.doesLinePassRuler(line, ruler)) {
-          const message = `Line ${line.lineNumber + 1} is longer than ruler at ${this.getRulerNumber(ruler)}.`;
-          // Add VS Code warning
-          diagnostics.push({
-            code: '',
-            message: message,
-            range: new vscode.Range(
-              new vscode.Position(line.lineNumber, this.getRulerNumber(ruler) - 1),
-              line.range.end
-            ),
-            severity: vscode.DiagnosticSeverity.Warning,
-          });
-          break;
-        }
+      const crossedRulerColumnNumber = this.getRulerColumnNumberThatLineCrossed(line.range.end.character, rulers);
+      if (crossedRulerColumnNumber != -1) {
+        const message = `Line ${line.lineNumber + 1} is longer than ruler at column ${crossedRulerColumnNumber}.`;
+        // Add VS Code warning
+        diagnostics.push({
+          code: '',
+          message: message,
+          range: new vscode.Range(new vscode.Position(line.lineNumber, crossedRulerColumnNumber - 1), line.range.end),
+          severity: vscode.DiagnosticSeverity.Warning,
+        });
       }
     }
 
@@ -86,21 +82,32 @@ export class CodeWall {
   }
 
   /**
-   * Gets all the rulers in the VS Code settings in descending order.
+   * Gets all the rulers in the VS Code settings in ascending column number order.
+   * @returns Rulers sorted by ascending column number order
    */
-  private getRulersDescendingOrder() {
+  private getRulersAscendingOrder() {
     const rulers: Array<Ruler> = vscode.workspace.getConfiguration('editor').get('rulers', []);
-    rulers.sort((a, b) => this.getRulerNumber(b) - this.getRulerNumber(a)); // Descending order
+    rulers.sort(this.rulerComparator.bind(this));
     return rulers;
   }
 
   /**
-   * Since a ruler can either be a number or an object, this method abstracts out getting
-   * the line number from the ruler.
-   * @param ruler VS Code ruler from settings
-   * @returns Ruler line number
+   * Comparator function for sorting rulers in ascending order based on column number.
+   * @param a Ruler 1
+   * @param b Ruler 2
+   * @returns Negative number if a is before b, Positive number if a is after b, 0 if equal
    */
-  public getRulerNumber(ruler: Ruler): number {
+  private rulerComparator(a: Ruler, b: Ruler) {
+    return this.getRulerColumnNumber(a) - this.getRulerColumnNumber(b);
+  }
+
+  /**
+   * Since a ruler can either be a number or an object, this method abstracts out getting
+   * the column number from the ruler.
+   * @param ruler VS Code ruler from settings
+   * @returns Ruler column number
+   */
+  public getRulerColumnNumber(ruler: Ruler): number {
     if (typeof ruler === 'number') {
       return ruler;
     }
@@ -120,13 +127,23 @@ export class CodeWall {
   }
 
   /**
-   * Returns whether the line passes the ruler.
-   * @param line Position number of the last character in the line.
-   * @param ruler Ruler being checked
-   * @returns True if line passes the ruler, otherwise false
+   * Gets the column number of the ruler the line passed or -1.
+   * @param lineEndColumnNumber Column number of the last character in the line
+   * @param rulers List of rulers in ascending order
+   * @returns The column number of the ruler the line passed or -1
    */
-  private doesLinePassRuler(line: vscode.TextLine, ruler: Ruler) {
-    return line.range.end.character > this.getRulerNumber(ruler);
+  public getRulerColumnNumberThatLineCrossed(lineEndColumnNumber: number, rulers: Array<Ruler>): number {
+    let insertionIndex = binarySearch(rulers, lineEndColumnNumber, this.rulerComparator.bind(this));
+    if (insertionIndex < 0) {
+      // -(index + 1) is returned by binarySearch when the value is not found in the array, where index is where the value
+      // would be inserted to maintain sorted order, so we do simple math to extract the index from what was returned.
+      insertionIndex = -insertionIndex - 1;
+    }
+    if (insertionIndex == 0) {
+      // Line ends before any rulers
+      return -1;
+    }
+    return this.getRulerColumnNumber(rulers[insertionIndex - 1]);
   }
 
   public dispose(): void {
