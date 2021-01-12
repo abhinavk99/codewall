@@ -30,6 +30,11 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.workspace.onDidSaveTextDocument((document: vscode.TextDocument) => {
       codeWall.checkCrossingWall(document, diagnostics);
     }),
+    vscode.workspace.onDidChangeConfiguration((configChangeEvent: vscode.ConfigurationChangeEvent) => {
+      if (configChangeEvent.affectsConfiguration(CodeWall.CONFIG_EDITOR_SECTION)) {
+        codeWall.setRulers();
+      }
+    }),
     codeWall
   );
 }
@@ -39,6 +44,18 @@ export function deactivate(): void {
 }
 
 export class CodeWall {
+  static readonly CONFIG_EDITOR_SECTION = 'editor';
+
+  rulers: Array<Ruler> = [];
+
+  constructor() {
+    this.setRulers();
+  }
+
+  public setRulers(): void {
+    this.rulers = this.getRulersPositiveAndAscendingOrder();
+  }
+
   /**
    * Goes through the document and adds warnings for any lines crossing any rulers.
    * @param document VS Code text document
@@ -48,13 +65,12 @@ export class CodeWall {
     diagnosticCollection.clear();
     const diagnostics: vscode.Diagnostic[] = [];
 
-    const rulers = this.getRulersAscendingOrder();
-    if (rulers.length == 0) {
+    if (this.rulers.length == 0) {
       return;
     }
 
     for (const line of this.getLines(document)) {
-      const crossedRulerColumnNumber = this.getRulerColumnNumberThatLineCrossed(line.range.end.character, rulers);
+      const crossedRulerColumnNumber = this.getRulerColumnNumberThatLineCrossed(line.range.end.character, this.rulers);
       if (crossedRulerColumnNumber != -1) {
         const message = `Line ${line.lineNumber + 1} is longer than ruler at column ${crossedRulerColumnNumber}.`;
         // Add VS Code warning
@@ -81,7 +97,7 @@ export class CodeWall {
    * Gets all the rulers in the VS Code settings in ascending column number order ignoring rulers at column <= 0.
    * @returns Rulers sorted by ascending column number order
    */
-  private getRulersAscendingOrder() {
+  private getRulersPositiveAndAscendingOrder() {
     const rulers: Array<Ruler> = vscode.workspace.getConfiguration('editor').get('rulers', []);
     rulers.sort(this.rulerComparator.bind(this));
     rulers.filter((ruler) => this.getRulerColumnNumber(ruler) > 0);
