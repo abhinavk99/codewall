@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.1] - 2021-01-12
+
+### Added
+
+- README badges
+- Dev
+  - Github Actions CI testing
+
 ## [1.2.0] - 2021-01-12
 
 ### Added

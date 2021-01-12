@@ -1,4 +1,13 @@
-# codewall
+# CodeWall
+
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/abhinavk99/codewall/CodeWall%20CI?style=flat-square)](https://github.com/abhinavk99/codewall/actions)
+[![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/abhinavk99.codewall?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=abhinavk99.codewall)
+[![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/abhinavk99.codewall?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=abhinavk99.codewall)
+[![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/abhinavk99.codewall?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=abhinavk99.codewall)
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
+[![GitHub Repo stars](https://img.shields.io/github/stars/abhinavk99/codewall?style=flat-square)](https://github.com/abhinavk99/codewall)
+[![GitHub](https://img.shields.io/github/license/abhinavk99/codewall?style=flat-square)](https://github.com/abhinavk99/codewall/blob/master/LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
 VS Code extension that checks if code goes past your rulers. Install it [here](https://marketplace.visualstudio.com/items?itemName=abhinavk99.codewall)!
 
