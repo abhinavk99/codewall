@@ -26,16 +26,12 @@ export function activate(context: vscode.ExtensionContext): void {
       if (editor != undefined) {
         codeWall.checkCrossingWall(editor.document, diagnostics);
       }
-    })
-  );
-
-  context.subscriptions.push(
+    }),
     vscode.workspace.onDidSaveTextDocument((document: vscode.TextDocument) => {
       codeWall.checkCrossingWall(document, diagnostics);
-    })
+    }),
+    codeWall
   );
-
-  context.subscriptions.push(codeWall);
 }
 
 export function deactivate(): void {
