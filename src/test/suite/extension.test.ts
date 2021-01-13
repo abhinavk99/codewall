@@ -5,6 +5,19 @@ import * as assert from 'assert';
 import vscode from 'vscode';
 import * as codewall from '../../extension';
 
+interface TestCase {
+  expectedResult: number;
+  message: string;
+}
+
+interface NumberTestCase extends TestCase {
+  input: number;
+}
+
+interface RulerTestCase extends TestCase {
+  input: codewall.Ruler;
+}
+
 suite('CodeWall Test Suite', () => {
   vscode.window.showInformationMessage('Start all CodeWall tests.');
   const codeWall = new codewall.CodeWall();
@@ -20,39 +33,72 @@ suite('CodeWall Test Suite', () => {
     },
   ];
 
-  test('Get ruler column number from number', () => {
-    assert.strictEqual(codeWall.getRulerColumnNumber(5), 5);
+  const rulerComparatorTestcases = [
+    {
+      ruler1: 5,
+      ruler2: 8,
+      expectedResult: -3,
+      message: 'Get negative number when number ruler a is before number ruler b',
+    },
+    {
+      ruler1: 34,
+      ruler2: 18,
+      expectedResult: 16,
+      message: 'Get positive number when number ruler a is after number ruler b',
+    },
+    {
+      ruler1: 3,
+      ruler2: 3,
+      expectedResult: 0,
+      message: 'Get 0 when number ruler a is at same position as number ruler b',
+    },
+    {
+      ruler1: { column: 5, color: '#000000' },
+      ruler2: 8,
+      expectedResult: -3,
+      message: 'Get negative number when object ruler a is before number ruler b',
+    },
+    {
+      ruler1: 34,
+      ruler2: { column: 18, color: '#000000' },
+      expectedResult: 16,
+      message: 'Get positive number when number ruler a is after object ruler b',
+    },
+    {
+      ruler1: { column: 3, color: '#000000' },
+      ruler2: { column: 3, color: '#000000' },
+      expectedResult: 0,
+      message: 'Get 0 when object ruler a is at same position as object ruler b',
+    },
+  ];
+  rulerComparatorTestcases.forEach((testCase: RulersTestCase) => {
+    test(`${testCase.message}`, () => {
+      assert.strictEqual(codeWall.rulerComparator(testCase.ruler1, testCase.ruler2), testCase.expectedResult);
+    });
   });
 
-  test('Get ruler column number from object', () => {
-    assert.strictEqual(codeWall.getRulerColumnNumber({ column: 5, color: '#000000' }), 5);
+  const getRulerColumnNumberTestCases = [
+    { input: 5, expectedResult: 5, message: 'Get ruler column number from number' },
+    { input: { column: 5, color: '#000000' }, expectedResult: 5, message: 'Get ruler column number from number' },
+  ];
+  getRulerColumnNumberTestCases.forEach((testCase: RulerTestCase) => {
+    test(`${testCase.message}`, () => {
+      assert.strictEqual(codeWall.getRulerColumnNumber(testCase.input), testCase.expectedResult);
+    });
   });
 
-  test('Get -1 when line does not cross any rulers', () => {
-    assert.strictEqual(codeWall.getRulerColumnNumberThatLineCrossed(80, rulers), -1);
-  });
-
-  test('Get first ruler column number when line crosses first ruler', () => {
-    assert.strictEqual(codeWall.getRulerColumnNumberThatLineCrossed(95, rulers), 90);
-  });
-
-  test('Get second ruler column number when line crosses second ruler', () => {
-    assert.strictEqual(codeWall.getRulerColumnNumberThatLineCrossed(110, rulers), 100);
-  });
-
-  test('Get last ruler column number when line crosses last ruler', () => {
-    assert.strictEqual(codeWall.getRulerColumnNumberThatLineCrossed(150, rulers), 120);
-  });
-
-  test('Get -1 when line ends at first ruler', () => {
-    assert.strictEqual(codeWall.getRulerColumnNumberThatLineCrossed(90, rulers), -1);
-  });
-
-  test('Get first ruler column number when line ends at second ruler', () => {
-    assert.strictEqual(codeWall.getRulerColumnNumberThatLineCrossed(100, rulers), 90);
-  });
-
-  test('Get second ruler column number when line ends at third ruler', () => {
-    assert.strictEqual(codeWall.getRulerColumnNumberThatLineCrossed(120, rulers), 100);
+  const getRulerColumnNumberThatLineCrossedTestCases = [
+    { input: 80, expectedResult: -1, message: 'Get -1 when line does not cross any rulers' },
+    { input: 95, expectedResult: 90, message: 'Get first ruler column number when line crosses first ruler' },
+    { input: 110, expectedResult: 100, message: 'Get second ruler column number when line crosses second ruler' },
+    { input: 150, expectedResult: 120, message: 'Get last ruler column number when line crosses last ruler' },
+    { input: 90, expectedResult: -1, message: 'Get -1 when line ends at first ruler' },
+    { input: 100, expectedResult: 90, message: 'Get first ruler column number when line ends at second ruler' },
+    { input: 120, expectedResult: 100, message: 'Get second ruler column number when line ends at third ruler' },
+  ];
+  getRulerColumnNumberThatLineCrossedTestCases.forEach((testCase: NumberTestCase) => {
+    test(`${testCase.message}`, () => {
+      assert.strictEqual(codeWall.getRulerColumnNumberThatLineCrossed(testCase.input, rulers), testCase.expectedResult);
+    });
   });
 });
