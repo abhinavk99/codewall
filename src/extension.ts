@@ -110,7 +110,7 @@ export class CodeWall {
    * @param b Ruler 2
    * @returns Negative number if a is before b, Positive number if a is after b, 0 if equal
    */
-  private rulerComparator(a: Ruler, b: Ruler) {
+  public rulerComparator(a: Ruler, b: Ruler): number {
     return this.getRulerColumnNumber(a) - this.getRulerColumnNumber(b);
   }
 

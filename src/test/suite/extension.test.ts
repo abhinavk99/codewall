@@ -15,7 +15,12 @@ interface NumberTestCase extends TestCase {
 }
 
 interface RulerTestCase extends TestCase {
-  input: codewall.Ruler;
+  ruler: codewall.Ruler;
+}
+
+interface RulersTestCase extends TestCase {
+  ruler1: codewall.Ruler;
+  ruler2: codewall.Ruler;
 }
 
 suite('CodeWall Test Suite', () => {
@@ -78,12 +83,12 @@ suite('CodeWall Test Suite', () => {
   });
 
   const getRulerColumnNumberTestCases = [
-    { input: 5, expectedResult: 5, message: 'Get ruler column number from number' },
-    { input: { column: 5, color: '#000000' }, expectedResult: 5, message: 'Get ruler column number from number' },
+    { ruler: 5, expectedResult: 5, message: 'Get ruler column number from number' },
+    { ruler: { column: 5, color: '#000000' }, expectedResult: 5, message: 'Get ruler column number from object' },
   ];
   getRulerColumnNumberTestCases.forEach((testCase: RulerTestCase) => {
     test(`${testCase.message}`, () => {
-      assert.strictEqual(codeWall.getRulerColumnNumber(testCase.input), testCase.expectedResult);
+      assert.strictEqual(codeWall.getRulerColumnNumber(testCase.ruler), testCase.expectedResult);
     });
   });
 
