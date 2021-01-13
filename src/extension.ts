@@ -6,9 +6,9 @@ import binarySearch from 'binary-search';
 // A ruler in VS Code settings can either be a number or an object mapping strings to numbers/strings
 // e.g. 90
 // e.g. {"column": 90, "color": "#000"}
-type Ruler = number | RulerObject;
+export type Ruler = number | RulerObject;
 
-interface RulerObject {
+export interface RulerObject {
   column: number;
   color: string;
 }
@@ -110,7 +110,7 @@ export class CodeWall {
    * @param b Ruler 2
    * @returns Negative number if a is before b, Positive number if a is after b, 0 if equal
    */
-  private rulerComparator(a: Ruler, b: Ruler) {
+  public rulerComparator(a: Ruler, b: Ruler): number {
     return this.getRulerColumnNumber(a) - this.getRulerColumnNumber(b);
   }
 
