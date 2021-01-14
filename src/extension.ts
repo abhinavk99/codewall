@@ -14,25 +14,27 @@ export interface RulerObject {
 }
 
 export function activate(context: vscode.ExtensionContext): void {
-  const diagnostics = vscode.languages.createDiagnosticCollection('CodeWall');
   const codeWall = new CodeWall();
 
-  if (vscode.window.activeTextEditor) {
-    codeWall.checkCrossingWall(vscode.window.activeTextEditor.document, diagnostics);
+  if (vscode.window.activeTextEditor != undefined) {
+    codeWall.checkCrossingWall(vscode.window.activeTextEditor.document);
   }
 
   context.subscriptions.push(
     vscode.window.onDidChangeActiveTextEditor((editor: vscode.TextEditor | undefined) => {
       if (editor != undefined) {
-        codeWall.checkCrossingWall(editor.document, diagnostics);
+        codeWall.checkCrossingWall(editor.document);
       }
     }),
     vscode.workspace.onWillSaveTextDocument((textDocumentWillSaveEvent: vscode.TextDocumentWillSaveEvent) => {
-      codeWall.checkCrossingWall(textDocumentWillSaveEvent.document, diagnostics);
+      codeWall.checkCrossingWall(textDocumentWillSaveEvent.document);
     }),
     vscode.workspace.onDidChangeConfiguration((configChangeEvent: vscode.ConfigurationChangeEvent) => {
-      if (configChangeEvent.affectsConfiguration(CodeWall.CONFIG_EDITOR_SECTION)) {
+      if (configChangeEvent.affectsConfiguration(CodeWall.EDITOR_CONFIG)) {
         codeWall.setRulers();
+      }
+      if (configChangeEvent.affectsConfiguration(CodeWall.CODEWALL_CONFIG)) {
+        codeWall.setOpenProblemsPane();
       }
     }),
     codeWall
@@ -44,25 +46,41 @@ export function deactivate(): void {
 }
 
 export class CodeWall {
-  static readonly CONFIG_EDITOR_SECTION = 'editor';
+  static readonly EDITOR_CONFIG = 'editor';
+  static readonly CODEWALL_CONFIG = 'codewall';
 
-  rulers: Array<Ruler> = [];
+  readonly diagnosticCollection: vscode.DiagnosticCollection;
+
+  rulers: Ruler[] = [];
+  openProblemsPane: boolean;
 
   constructor() {
+    this.diagnosticCollection = vscode.languages.createDiagnosticCollection('CodeWall');
     this.setRulers();
+    this.openProblemsPane = false;
+    this.setOpenProblemsPane();
   }
 
+  /**
+   * Gets and sets all the rulers in the VS Code settings in ascending column number order ignoring rulers at column <= 0.
+   */
   public setRulers(): void {
-    this.rulers = this.getRulersPositiveAndAscendingOrder();
+    this.rulers = vscode.workspace.getConfiguration(CodeWall.EDITOR_CONFIG).get('rulers', []);
+    this.rulers.sort(this.rulerComparator.bind(this));
+    this.rulers.filter((ruler) => this.getRulerColumnNumber(ruler) > 0);
+  }
+
+  public setOpenProblemsPane(): void {
+    this.openProblemsPane =
+      vscode.workspace.getConfiguration(CodeWall.CODEWALL_CONFIG).get('openProblemsPane') ?? false;
   }
 
   /**
    * Goes through the document and adds warnings for any lines crossing any rulers.
    * @param document VS Code text document
-   * @param diagnosticCollection Diagnostics collection to add warnings to
    */
-  public checkCrossingWall(document: vscode.TextDocument, diagnosticCollection: vscode.DiagnosticCollection): void {
-    diagnosticCollection.clear();
+  public checkCrossingWall(document: vscode.TextDocument): void {
+    this.diagnosticCollection.clear();
     const diagnostics: vscode.Diagnostic[] = [];
 
     if (this.rulers.length == 0) {
@@ -77,24 +95,13 @@ export class CodeWall {
     }
 
     if (diagnostics.length > 0) {
-      diagnosticCollection.set(document.uri, diagnostics);
+      this.diagnosticCollection.set(document.uri, diagnostics);
 
       // Open problems pane if setting is on
-      if (vscode.workspace.getConfiguration('codewall').get('openProblemsPane')) {
+      if (this.openProblemsPane) {
         vscode.commands.executeCommand('workbench.action.problems.focus');
       }
     }
-  }
-
-  /**
-   * Gets all the rulers in the VS Code settings in ascending column number order ignoring rulers at column <= 0.
-   * @returns Rulers sorted by ascending column number order
-   */
-  private getRulersPositiveAndAscendingOrder() {
-    const rulers: Array<Ruler> = vscode.workspace.getConfiguration(CodeWall.CONFIG_EDITOR_SECTION).get('rulers', []);
-    rulers.sort(this.rulerComparator.bind(this));
-    rulers.filter((ruler) => this.getRulerColumnNumber(ruler) > 0);
-    return rulers;
   }
 
   /**
@@ -138,7 +145,7 @@ export class CodeWall {
    * @param rulers List of rulers in ascending order
    * @returns The column number of the ruler the line passed or -1
    */
-  public getRulerColumnNumberThatLineCrossed(lineEndColumnNumber: number, rulers: Array<Ruler>): number {
+  public getRulerColumnNumberThatLineCrossed(lineEndColumnNumber: number, rulers: Ruler[]): number {
     let insertionIndex = binarySearch(rulers, lineEndColumnNumber, this.rulerComparator.bind(this));
     if (insertionIndex < 0) {
       // -(index + 1) is returned by binarySearch when the value is not found in the array, where index is where the value
@@ -172,6 +179,6 @@ export class CodeWall {
   }
 
   public dispose(): void {
-    return;
+    this.diagnosticCollection.dispose();
   }
 }
