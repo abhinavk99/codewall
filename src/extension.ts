@@ -27,8 +27,8 @@ export function activate(context: vscode.ExtensionContext): void {
         codeWall.checkCrossingWall(editor.document, diagnostics);
       }
     }),
-    vscode.workspace.onDidSaveTextDocument((document: vscode.TextDocument) => {
-      codeWall.checkCrossingWall(document, diagnostics);
+    vscode.workspace.onWillSaveTextDocument((textDocumentWillSaveEvent: vscode.TextDocumentWillSaveEvent) => {
+      codeWall.checkCrossingWall(textDocumentWillSaveEvent.document, diagnostics);
     }),
     vscode.workspace.onDidChangeConfiguration((configChangeEvent: vscode.ConfigurationChangeEvent) => {
       if (configChangeEvent.affectsConfiguration(CodeWall.CONFIG_EDITOR_SECTION)) {
@@ -72,14 +72,7 @@ export class CodeWall {
     for (const line of this.getLines(document)) {
       const crossedRulerColumnNumber = this.getRulerColumnNumberThatLineCrossed(line.range.end.character, this.rulers);
       if (crossedRulerColumnNumber != -1) {
-        const message = `Line ${line.lineNumber + 1} is longer than ruler at column ${crossedRulerColumnNumber}.`;
-        // Add VS Code warning
-        diagnostics.push({
-          code: '',
-          message: message,
-          range: new vscode.Range(new vscode.Position(line.lineNumber, crossedRulerColumnNumber - 1), line.range.end),
-          severity: vscode.DiagnosticSeverity.Warning,
-        });
+        this.addDiagnosticWarningToDiagnostics(line, crossedRulerColumnNumber, diagnostics);
       }
     }
 
@@ -98,7 +91,7 @@ export class CodeWall {
    * @returns Rulers sorted by ascending column number order
    */
   private getRulersPositiveAndAscendingOrder() {
-    const rulers: Array<Ruler> = vscode.workspace.getConfiguration('editor').get('rulers', []);
+    const rulers: Array<Ruler> = vscode.workspace.getConfiguration(CodeWall.CONFIG_EDITOR_SECTION).get('rulers', []);
     rulers.sort(this.rulerComparator.bind(this));
     rulers.filter((ruler) => this.getRulerColumnNumber(ruler) > 0);
     return rulers;
@@ -157,6 +150,25 @@ export class CodeWall {
       return -1;
     }
     return this.getRulerColumnNumber(rulers[insertionIndex - 1]);
+  }
+
+  /**
+   * Adds VS Code Diagnostic warning to list of Diagnostic objects.
+   * @param line Line that crosses a ruler
+   * @param crossedRulerColumnNumber Column number of the ruler being crossed
+   * @param diagnostics List of Diagnostic objects being added to
+   */
+  private addDiagnosticWarningToDiagnostics(
+    line: vscode.TextLine,
+    crossedRulerColumnNumber: number,
+    diagnostics: vscode.Diagnostic[]
+  ) {
+    diagnostics.push({
+      code: '',
+      message: `Line ${line.lineNumber + 1} is longer than ruler at column ${crossedRulerColumnNumber}.`,
+      range: new vscode.Range(new vscode.Position(line.lineNumber, crossedRulerColumnNumber - 1), line.range.end),
+      severity: vscode.DiagnosticSeverity.Warning,
+    });
   }
 
   public dispose(): void {
