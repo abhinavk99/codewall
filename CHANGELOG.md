@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2] - 2021-01-14
+
+### Changed
+
+- Switched from checking lines when getting onDidSaveTextDocument to onWillSaveTextDocument event for minor performance boost
+- Refactored code
+
 ## [1.2.1] - 2021-01-12
 
 ### Added
